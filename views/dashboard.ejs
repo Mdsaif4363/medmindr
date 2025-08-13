@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .dashboard-container {
+      max-width: 600px;
+      margin: 3rem auto;
+      background: linear-gradient(45deg, #b6fbff, #83a4d4);
+      padding: 2rem;
+      border-radius: 1rem;
+      color: #222;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .dashboard-container h2 {
+      margin-bottom: 1rem;
+      color: #1a374d;
+    }
+    .dashboard-container p {
+      margin: 0.5rem 0;
+      font-size: 1.1rem;
+    }
+    .dashboard-container a {
+      display: inline-block;
+      margin-top: 1rem;
+      color: #1a374d;
+      text-decoration: none;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <h2>📊 Dashboard</h2>
+    <p><strong>Total Medicines:</strong> <%= totalMedicines %></p>
+    <p><strongActive Reminders:</strong> <%= activeReminders %></p>
+
+    <a href="/">← Back to Home</a>
+  </div>
+</body>
+</html>

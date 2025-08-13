@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In / Sign Up</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600&display=swap");
+
+      :root {
+        --popupBackground: linear-gradient(45deg, #83a4d4, #b6fbff);
+        --color: #fcfcfc;
+        --colorSmooth: #e0e0e0;
+        --colorDark: #222;
+      }
+
+      * {
+        margin: 0;
+        border: 0;
+        padding: 0;
+        outline: 0;
+        font-family: "Rubik", sans-serif;
+      }
+
+      *:after,
+      *:before {
+        box-sizing: border-box;
+      }
+
+      html {
+        position: relative;
+        overflow: hidden;
+        font-size: 16px;
+      }
+
+      body {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(to top, #a4def9, #cfbae1);
+      }
+
+      .popup {
+        width: 37.5rem;
+        height: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--popupBackground);
+        backdrop-filter: blur(1rem);
+        border-radius: 1rem;
+        padding: 1rem;
+        gap: 1rem;
+        flex-direction: column;
+      }
+
+      .popup-image {
+        width: 100%;
+        height: auto;
+        overflow: hidden;
+        border-radius: 0.5rem;
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .popup-image img {
+        width: 50%;
+        height: 50%;
+        object-fit: center;
+      }
+
+      form {
+        width: 100%;
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        flex-direction: column;
+      }
+
+      input {
+        padding: 0.6rem 0.75rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 1rem;
+        background: whitesmoke;
+        backdrop-filter: blur(1rem);
+        color: var(--colorDark);
+        transition: all 0.25s ease 0s;
+        width: calc(100% - 20px);
+      }
+
+      input:focus {
+        box-shadow: 0 0 0 3px #e8454580;
+      }
+
+      .title {
+        color: var(--color);
+        padding: 0.5rem 0;
+        text-align: center;
+      }
+
+      .submit-btn {
+        padding: 0.8rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 1rem;
+        background: #1a374d;
+        backdrop-filter: blur(1rem);
+        color: var(--color);
+        transition: all 0.25s ease 0s;
+        cursor: pointer;
+        width: calc(100% - 20px);
+        text-align: center;
+      }
+
+      .submit-btn:hover {
+        background: #1a374ddd;
+      }
+
+      .submit-btn:focus {
+        background: #1a374ddd;
+        box-shadow: 0 0 0 3px #e8454580;
+      }
+
+      hr {
+        width: 100%;
+        height: 2px;
+        margin: 0.1rem 0;
+        background: var(--popupBackground);
+        border-radius: 0.5rem;
+      }
+
+      .options {
+        color: var(--colorSmooth);
+        font-weight: 400;
+        text-align: center;
+      }
+
+      .options a {
+        color: #1b262c;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .options div {
+        padding: 0.1rem 0;
+      }
+
+      @media screen and (max-width: 38rem) {
+        .popup {
+          width: 90%;
+        }
+
+        .popup-image {
+          display: none;
+        }
+
+        input,
+        .submit-btn {
+          width: 100%;
+        }
+      }
+
+      .error {
+        background: #e8454540;
+        color: var(--color);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="popup">
+      <div class="popup-image">
+        <img src="" />
+      </div>
+
+      <!-- Sign In Form -->
+      <form class="signinForm" onsubmit="return false">
+        <h1 class="title">Sign in</h1>
+        <input type="email" id="email" placeholder="Email address" autocomplete="off" />
+        <input type="password" id="password" placeholder="Password" />
+        <button class="submit-btn" type="submit">Sign in</button>
+        <hr />
+        <div class="options">
+          <div>
+            Don't have an account? <a id="toggle-signup">Sign up</a>
+          </div>
+          <div>Forgot your password? <a href="#">Reset</a></div>
+        </div>
+        <a href="/">Go Back</a>
+
+
+      </form>
+
+      <!-- Sign Up Form (hidden by default) -->
+      <form class="signUpForm" onsubmit="return false" style="display:none;">
+        <h1 class="title">Sign up</h1>
+        <input type="text" id="signup-name" placeholder="Full Name" />
+        <input type="email" id="signup-email" placeholder="Email address" autocomplete="off" />
+        <input type="password" id="signup-password" placeholder="Password" />
+        <input type="password" id="signup-confirm-password" placeholder="Confirm Password" />
+        <button class="submit-btn" type="submit">Create Account</button>
+        <hr />
+        <div class="options">
+          <div>Already have an account? <a id="toggle-signin">Sign in</a></div>
+        </div>
+        <a href="/">Go Back</a>
+      </form>
+    </div>
+
+    <!-- Script for toggling forms -->
+    <script>
+  const signInForm = document.querySelector(".signinForm");
+  const signUpForm = document.querySelector(".signUpForm");
+  const toggleToSignUp = document.getElementById("toggle-signup");
+  const toggleToSignIn = document.getElementById("toggle-signin");
+
+  toggleToSignUp.onclick = () => {
+    signInForm.style.display = "none";
+    signUpForm.style.display = "flex";
+  };
+
+  toggleToSignIn.onclick = () => {
+    signUpForm.style.display = "none";
+    signInForm.style.display = "flex";
+  };
+
+  // 🔐 Handle Sign In
+  signInForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    const res = await fetch("/sign_in", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ username: email, password }),
+    });
+
+    const text = await res.text();
+    if (res.redirected) {
+      window.location.href = res.url;
+    } else {
+      alert(text); // Show error message
+    }
+  });
+
+  // 🆕 Handle Sign Up
+  signUpForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("signup-name").value.trim();
+    const email = document.getElementById("signup-email").value.trim();
+    const password = document.getElementById("signup-password").value.trim();
+    const confirmPassword = document.getElementById("signup-confirm-password").value.trim();
+
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    const res = await fetch("/sign_up", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ username: email, password }),
+    });
+
+    const text = await res.text();
+    alert(text);
+    if (text.includes("Signup successful")) {
+      toggleToSignIn.click(); // Switch to sign-in form
+    }
+  });
+</script>
+  </body>
+</html>
