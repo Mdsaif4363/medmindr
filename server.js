@@ -229,10 +229,7 @@ app.get("/dashboard", requireLogin, (req, res) => {
 
 async function startServer() {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
+    mongoose.connect(mongodb+srv://Mdsaifali:Saif6343@saif1.n5mqz1l.mongodb.net/);
     console.log("Database Connected Successfully");
 
     medicineSchedule = loadData();
