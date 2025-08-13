@@ -1,38 +1,40 @@
+const dotenv = require("dotenv");
+dotenv.config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const path = require("path");
 const nodemailer = require("nodemailer");
 const session = require("express-session");
-const { User, mongoose } = require("./config");
+const MongoStore = require("connect-mongo");
+const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const { User } = require("./config");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 
-app.use(
-  session({
-    secret: "your_secret_key",
-    resave: false,
-    saveUninitialized: true,
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    ttl: 14 * 24 * 60 * 60
   })
-);
+}));
 
 const DATA_FILE = "medicine_schedule.json";
 let medicineSchedule = [];
 let reminderIntervals = {};
 
-// 🔐 Middleware to protect routes
 function requireLogin(req, res, next) {
-  if (req.session.loggedIn) {
-    next();
-  } else {
-    res.redirect("/sign_in");
-  }
+  if (req.session.loggedIn) next();
+  else res.redirect("/sign_in");
 }
 
 function loadData() {
@@ -51,13 +53,13 @@ function sendEmailReminder(subject, message, toEmail) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "davalmalik635@gmail.com",
-      pass: "bhvp lkpd mugr ylwo",
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   });
 
   const mailOptions = {
-    from: "davalmalik635@gmail.com",
+    from: process.env.EMAIL_USER,
     to: toEmail,
     subject,
     text: message,
@@ -69,12 +71,11 @@ function sendEmailReminder(subject, message, toEmail) {
   });
 }
 
-// 🏠 Homepage — open to everyone
+// Routes
 app.get("/", (req, res) => {
   res.render("index", { loggedIn: req.session.loggedIn });
 });
 
-// 🔐 Protected routes
 app.get("/add_medicine", requireLogin, (req, res) => {
   res.render("add_medicine", { loggedIn: req.session.loggedIn });
 });
@@ -111,7 +112,6 @@ app.post("/add_medicine", requireLogin, (req, res) => {
 app.post("/set_reminder", requireLogin, (req, res) => {
   const medicineName = req.body.medicine_name;
   medicineSchedule = loadData();
-
   const medicine = medicineSchedule.find((m) => m.medicine_name === medicineName);
   if (!medicine) return res.redirect("/show_details");
 
@@ -152,13 +152,11 @@ app.post("/set_reminder", requireLogin, (req, res) => {
 app.post("/remove_medicine", requireLogin, (req, res) => {
   const medicineName = req.body.medicine_name;
   medicineSchedule = loadData();
-
   medicineSchedule = medicineSchedule.filter((m) => m.medicine_name !== medicineName);
   if (reminderIntervals[medicineName]) {
     clearInterval(reminderIntervals[medicineName]);
     delete reminderIntervals[medicineName];
   }
-
   saveData(medicineSchedule);
   res.redirect("/show_details");
 });
@@ -171,22 +169,14 @@ app.get("/show_details", requireLogin, (req, res) => {
   });
 });
 
-// 🔓 Signup route
 app.post("/sign_up", async (req, res) => {
   try {
     const { username, password } = req.body;
     const existingUser = await User.findOne({ name: username });
-
-    if (existingUser) {
-      return res.send("User already exists. Please choose a different username.");
-    }
+    if (existingUser) return res.send("User already exists. Please choose a different username.");
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({
-      name: username,
-      password: hashedPassword,
-    });
-
+    const newUser = await User.create({ name: username, password: hashedPassword });
     console.log("Signup successful:", newUser);
     return res.send('Signup successful! You can now <a href="/sign_in">login</a>.');
   } catch (err) {
@@ -195,7 +185,6 @@ app.post("/sign_up", async (req, res) => {
   }
 });
 
-// 🔓 Login route (redirects to homepage)
 app.post("/sign_in", async (req, res) => {
   try {
     const user = await User.findOne({ name: req.body.username });
@@ -205,14 +194,13 @@ app.post("/sign_in", async (req, res) => {
     if (!isMatch) return res.send("Wrong password");
 
     req.session.loggedIn = true;
-    return res.redirect("/"); // ✅ Redirect to homepage
+    return res.redirect("/");
   } catch (err) {
     console.error(err);
     return res.status(500).send("Login error");
   }
 });
 
-// 🔓 Login & Signup pages
 app.get("/sign_in", (req, res) => {
   res.render("sign_in", { loggedIn: req.session.loggedIn });
 });
@@ -221,12 +209,12 @@ app.get("/sign_up", (req, res) => {
   res.render("sign_up", { loggedIn: req.session.loggedIn });
 });
 
-// 🔓 Logout
 app.get("/logout", (req, res) => {
   req.session.destroy(() => {
     res.redirect("/");
   });
 });
+
 app.get("/dashboard", requireLogin, (req, res) => {
   const schedule = loadData();
   const totalMedicines = schedule.length;
@@ -239,12 +227,12 @@ app.get("/dashboard", requireLogin, (req, res) => {
   });
 });
 
-// 🚀 Start server after DB connection
 async function startServer() {
   try {
-    await mongoose.connect(
-      "mongodb+srv://Mdsaifali:Saif6343@saif1.n5mqz1l.mongodb.net/LoginSystem"
-    );
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
     console.log("Database Connected Successfully");
 
     medicineSchedule = loadData();
