@@ -1,5 +1,4 @@
-const dotenv = require("dotenv");
-dotenv.config();
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const fs = require("fs");
@@ -13,6 +12,7 @@ const { User } = require("./config");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+console.log("🔍 Loaded MONGO_URI:", process.env.MONGO_URI);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
@@ -24,8 +24,8 @@ app.use(session({
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
-    ttl: 14 * 24 * 60 * 60
-  })
+    ttl: 14 * 24 * 60 * 60,
+  }),
 }));
 
 const DATA_FILE = "medicine_schedule.json";
@@ -66,8 +66,8 @@ function sendEmailReminder(subject, message, toEmail) {
   };
 
   transporter.sendMail(mailOptions, (err, info) => {
-    if (err) console.error(err);
-    else console.log("Email sent:", info.response);
+    if (err) console.error("❌ Email error:", err);
+    else console.log("✅ Email sent:", info.response);
   });
 }
 
@@ -177,10 +177,10 @@ app.post("/sign_up", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({ name: username, password: hashedPassword });
-    console.log("Signup successful:", newUser);
+    console.log("✅ Signup successful:", newUser);
     return res.send('Signup successful! You can now <a href="/sign_in">login</a>.');
   } catch (err) {
-    console.error(err);
+    console.error("❌ Signup error:", err);
     return res.status(500).send("Error during signup.");
   }
 });
@@ -196,7 +196,7 @@ app.post("/sign_in", async (req, res) => {
     req.session.loggedIn = true;
     return res.redirect("/");
   } catch (err) {
-    console.error(err);
+    console.error("❌ Login error:", err);
     return res.status(500).send("Login error");
   }
 });
@@ -229,15 +229,18 @@ app.get("/dashboard", requireLogin, (req, res) => {
 
 async function startServer() {
   try {
-    mongoose.connect(process.env.MONGO_URI);
-    console.log("Database Connected Successfully");
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("✅ Database Connected Successfully");
 
     medicineSchedule = loadData();
     app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   } catch (err) {
-    console.error("Database cannot be Connected", err);
+    console.error("❌ Database cannot be Connected", err);
     process.exit(1);
   }
 }
