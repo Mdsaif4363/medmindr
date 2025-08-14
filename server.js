@@ -229,9 +229,17 @@ app.get("/dashboard", requireLogin, (req, res) => {
 
 async function startServer() {
   try {
+    /**
+     * 🛡️ TEMPORARY IP WHITELISTING REMINDER
+     * If deploying to Render and facing MongoDB connection issues:
+     * → Go to MongoDB Atlas → Network Access
+     * → Add IP Address: 0.0.0.0/0 (temporary, allows all IPs)
+     * ⚠️ Replace with Render's static IP once deployment is stable
+     */
     await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      ssl: true,
+      tls: true,
+      tlsInsecure: false,
     });
     console.log("✅ Database Connected Successfully");
 
